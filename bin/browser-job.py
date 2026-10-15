@@ -37,16 +37,19 @@ def endpoint(name):
 
 
 def challenged(page):
-    # innerText leaves out <input> buttons, and ChatGPT's interstitial is one ("Verify you are human" as its value).
+    # Every check is bounded on the driver side (a page whose main thread is stuck cannot hang the job). innerText leaves
+    # out <input> buttons, and ChatGPT's interstitial is one ("Verify you are human" as its value), so those are matched
+    # by selector, with the challenge iframe, in one bounded wait.
     try:
-        return page.evaluate(
-            """(needles) => {
-                const texts = [document.body ? document.body.innerText : ''];
-                for (const e of document.querySelectorAll('input[type=button], input[type=submit]')) texts.push(e.value || '');
-                return texts.some((t) => needles.some((n) => t.includes(n)));
-            }""",
-            list(CHALLENGE_TEXT),
-        ) or page.locator("iframe[src*='challenges.cloudflare.com']").count() > 0
+        if any(t in page.inner_text("body", timeout=2000) for t in CHALLENGE_TEXT):
+            return True
+    except Exception:
+        return False
+    selector = ", ".join([f'input[type=button][value*="{t}"], input[type=submit][value*="{t}"]' for t in CHALLENGE_TEXT]
+                         + ["iframe[src*='challenges.cloudflare.com']"])
+    try:
+        page.locator(selector).first.wait_for(state="attached", timeout=500)
+        return True
     except Exception:
         return False
 
