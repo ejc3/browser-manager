@@ -1,0 +1,10 @@
+# CodeRabbit reviews every pull request on its own (public repositories are otherwise reviewed only on request).
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!package-lock.json"
+    - "!next-env.d.ts"

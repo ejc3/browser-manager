@@ -1,0 +1,37 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  app:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Install native VNC regression prerequisite
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends x11vnc
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Check Linux installer syntax
+        if: runner.os == 'Linux'
+        run: bash -n scripts/install.sh
+      - name: Check macOS installer syntax
+        if: runner.os == 'macOS'
+        run: node --check scripts/install-macos.mjs
+      - run: node --check scripts/configure-openclaw-viewer.mjs
+

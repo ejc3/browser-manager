@@ -1,0 +1,10 @@
+{
+  "strictness": 2,
+  "commentTypes": ["logic", "syntax"],
+  "triggerOnUpdates": true,
+  "triggerOnDrafts": false,
+  "statusCheck": true,
+  "shouldUpdateDescription": false,
+  "ignorePatterns": "package-lock.json\nnext-env.d.ts",
+  "instructions": "browser-manager runs several signed-in browsers for one owner behind Cloudflare Access. Report a defect only with its concrete failure: who gains access to a browser, a profile or the CDP bridge; which request is accepted that should be refused; which test or build breaks. Security boundaries: only a verified Access JWT for the configured audience and owner reaches the dashboard and viewers; the CLI and CDP bridge are reachable only through the owner-only Unix socket and loopback; nothing listens beyond 127.0.0.1."
+}
