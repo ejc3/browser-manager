@@ -4,3 +4,4 @@
 /playwright-report/
 /*.tsbuildinfo
 /.env*
+__pycache__/

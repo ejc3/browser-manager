@@ -37,11 +37,21 @@ def endpoint(name):
 
 
 def challenged(page):
+    # Every check is bounded on the driver side (a page whose main thread is stuck cannot hang the job). innerText leaves
+    # out <input> buttons, and ChatGPT's interstitial is one ("Verify you are human" as its value), so those are matched
+    # by selector, with the challenge iframe, in one bounded wait.
     try:
-        text = page.inner_text("body", timeout=2000)
+        if any(t in page.inner_text("body", timeout=2000) for t in CHALLENGE_TEXT):
+            return True
     except Exception:
         return False
-    return any(t in text for t in CHALLENGE_TEXT) or page.locator("iframe[src*='challenges.cloudflare.com']").count() > 0
+    selector = ", ".join([f'input[type=button][value*="{t}"], input[type=submit][value*="{t}"]' for t in CHALLENGE_TEXT]
+                         + ["iframe[src*='challenges.cloudflare.com']"])
+    try:
+        page.locator(selector).first.wait_for(state="attached", timeout=500)
+        return True
+    except Exception:
+        return False
 
 
 def main():
