@@ -1,5 +1,7 @@
 # browser-manager
 
+[![ci](https://github.com/ejc3/browser-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/ejc3/browser-manager/actions/workflows/ci.yml)
+
 A single-owner dashboard and `browserctl` CLI for several named, signed-in browser desktops on one host, reachable from
 a phone through a Cloudflare Tunnel behind Cloudflare Access. Each browser keeps its own persistent profile, so logins
 made inside it stay there; closing the viewer never stops the browser. Scripts can drive a running browser through a
