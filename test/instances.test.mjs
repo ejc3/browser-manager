@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, open, readFile, readdir, readlink, realpath, writeFile, rm, stat, symlink, chmod } from 'node:fs/promises';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { createInstanceManager } from '../lib/instances.mjs';
 
@@ -213,6 +214,34 @@ test('explicit profile reuse is private, refuses existing Chrome locks, and neve
   assert.equal(launches.length, 1);
   assert.equal(launches[0].profile, profile);
   assert.equal(JSON.stringify(manager.list()).includes(profile), false);
+});
+
+test("an external profile whose lock names a process gone from this host starts again (a service restart's leftovers)", async (t) => {
+  const { manager, stateDir, launches } = await fixture(t);
+  const profile = join(stateDir, 'external-after-restart');
+  await mkdir(profile, { mode: 0o700 });
+  const gone = spawnSync(process.execPath, ['-e', '0']).pid; // exited before we look
+  await symlink(`${hostname()}-${gone}`, join(profile, 'SingletonLock'));
+  await symlink('/tmp/org.chromium.Chromium.gone/SingletonSocket', join(profile, 'SingletonSocket'));
+  await manager.start('external', { profile });
+  assert.equal(launches.length, 1);
+  assert.equal(await readlink(join(profile, 'SingletonLock')), `${hostname()}-${gone}`, 'left for Chromium, never deleted');
+});
+
+test('an external profile stays refused while its lock names a live process here, or another host', async (t) => {
+  const { manager, stateDir, launches } = await fixture(t);
+  const gone = spawnSync(process.execPath, ['-e', '0']).pid;
+  for (const [name, target] of [['live', `${hostname()}-${process.pid}`], ['remote', `not-${hostname()}-${gone}`]]) {
+    const profile = join(stateDir, `external-${name}`);
+    await mkdir(profile, { mode: 0o700 });
+    await symlink(target, join(profile, 'SingletonLock'));
+    await assert.rejects(manager.start(name, { profile }), /already in use/);
+  }
+  const socketOnly = join(stateDir, 'external-socket');
+  await mkdir(socketOnly, { mode: 0o700 });
+  await symlink('/tmp/somewhere/SingletonSocket', join(socketOnly, 'SingletonSocket'));
+  await assert.rejects(manager.start('socket', { profile: socketOnly }), /already in use/);
+  assert.equal(launches.length, 0);
 });
 
 test('managed profiles delegate stale-lock recovery to Chromium without deleting locks', async (t) => {
