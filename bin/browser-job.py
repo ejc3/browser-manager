@@ -37,11 +37,18 @@ def endpoint(name):
 
 
 def challenged(page):
+    # innerText leaves out <input> buttons, and ChatGPT's interstitial is one ("Verify you are human" as its value).
     try:
-        text = page.inner_text("body", timeout=2000)
+        return page.evaluate(
+            """(needles) => {
+                const texts = [document.body ? document.body.innerText : ''];
+                for (const e of document.querySelectorAll('input[type=button], input[type=submit]')) texts.push(e.value || '');
+                return texts.some((t) => needles.some((n) => t.includes(n)));
+            }""",
+            list(CHALLENGE_TEXT),
+        ) or page.locator("iframe[src*='challenges.cloudflare.com']").count() > 0
     except Exception:
         return False
-    return any(t in text for t in CHALLENGE_TEXT) or page.locator("iframe[src*='challenges.cloudflare.com']").count() > 0
 
 
 def main():
