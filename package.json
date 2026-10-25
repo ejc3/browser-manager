@@ -2,6 +2,7 @@
   "name": "@ejc3/browser-manager",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@12.15.0",
   "type": "module",
   "engines": { "node": ">=22.13.0" },
   "bin": { "browserctl": "./bin/browserctl.mjs" },
