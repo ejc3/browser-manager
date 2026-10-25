@@ -6,7 +6,7 @@ umask 077
 fail() { printf 'browser-manager: %s\n' "$*" >&2; exit 1; }
 if [[ $# -lt 1 || $# -gt 2 || ${1:-} == --help ]]; then
   printf 'Usage: %s CONFIG_ENV [TUNNEL_TOKEN_FILE]\n' "$0"
-  printf 'Run as the browser owner after npm ci && npm run build in browser-manager.\n'
+  printf 'Run as the browser owner after pnpm install --frozen-lockfile --ignore-scripts && pnpm run build in browser-manager.\n'
   exit 1
 fi
 [[ $(id -u) != 0 ]] || fail 'Run as the browser owner, not root.'
@@ -41,7 +41,7 @@ fi
 for bm_path in "$bm_project" "$bm_config_dir" "$bm_node" "${bm_cloudflared:-/usr/bin/cloudflared}"; do
   [[ $bm_path != *[$'\n\r\\"%$']* ]] || fail 'Install paths must not contain quotes, escapes, newlines, dollar signs, or percent signs.'
 done
-[[ -f $bm_project/.next/BUILD_ID ]] || fail 'Build the application first: npm ci && npm run build.'
+[[ -f $bm_project/.next/BUILD_ID ]] || fail 'Build the application first: pnpm install --frozen-lockfile --ignore-scripts && pnpm run build.'
 [[ -f $bm_project/server.mjs && -x $bm_project/bin/browserctl.mjs ]] || fail 'The application or browserctl entry point is missing.'
 for bm_program in /usr/bin/Xvfb /usr/bin/x11vnc /usr/bin/openbox /usr/bin/xrandr /usr/bin/wmctrl /usr/bin/xprop /usr/bin/python3 /usr/bin/dbus-daemon /usr/bin/gdbus; do
   [[ -x $bm_program ]] || fail 'Install the desktop prerequisites: xvfb x11vnc openbox x11-xserver-utils x11-utils wmctrl python3 dbus libglib2.0-bin at-spi2-core python3-dbus.'
