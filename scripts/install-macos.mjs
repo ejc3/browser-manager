@@ -226,7 +226,7 @@ export async function installMacOS({ configFile, tokenFile } = {}, dependencies 
   for (const target of [join(project, 'server.mjs'), join(project, '.next/BUILD_ID'), join(project, 'bin/browserctl.mjs')]) {
     const stat = await io.lstat(target).catch(() => null);
     if (!stat?.isFile() || stat.isSymbolicLink() || stat.uid !== uid || (stat.mode & 0o022) !== 0 || stat.size === 0 ||
-        await io.realpath(target) !== target) fail('Build this owned checkout first: npm ci && npm run build.');
+        await io.realpath(target) !== target) fail('Build this owned checkout first: pnpm install --frozen-lockfile --ignore-scripts && pnpm run build.');
   }
   await io.access(join(project, 'bin/browserctl.mjs'), constants.X_OK);
   await io.access(node, constants.X_OK);

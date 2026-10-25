@@ -58,8 +58,8 @@ Node.js 22.13+, an installed, sandbox-capable Chromium or Chrome, the desktop pr
 ```bash
 sudo apt-get install xvfb x11vnc openbox x11-xserver-utils x11-utils wmctrl python3 dbus libglib2.0-bin at-spi2-core python3-dbus
 git clone https://github.com/ejc3/browser-manager && cd browser-manager
-npm ci --ignore-scripts
-npm run build
+pnpm install --frozen-lockfile --ignore-scripts
+pnpm run build
 ./scripts/install.sh /absolute/path/browser-manager.env /absolute/path/tunnel-token
 ```
 
@@ -161,8 +161,8 @@ load-balances between two different browser lists. From a checkout at a permanen
 `brew install cloudflared`:
 
 ```bash
-npm ci --ignore-scripts
-npm run build
+pnpm install --frozen-lockfile --ignore-scripts
+pnpm run build
 node scripts/install-macos.mjs /absolute/private/browser-manager.env /absolute/private/tunnel-token
 browserctl start personal --url https://example.com
 ```
@@ -183,10 +183,10 @@ SSH cannot reach the Keychain (`errSecInteractionNotAllowed`) and cannot keep en
 
 ## Development
 
-`npm test`, `npm run typecheck` and `npm run build` are the CI gate on Linux and macOS (install `x11vnc` first on
+`pnpm test`, `pnpm run typecheck` and `pnpm run build` are the CI gate on Linux and macOS (install `x11vnc` first on
 Linux; the native VNC check is skipped on macOS). Tests cover signed Access identities, Origin enforcement, socket
 routing, expiry, the CDP bridge and lifecycle, without a Cloudflare account.
-`BM_BROWSER_BIN=/path/to/chrome npm run test:live` runs two real sandboxed desktops and the production UI on loopback with
+`BM_BROWSER_BIN=/path/to/chrome pnpm run test:live` runs two real sandboxed desktops and the production UI on loopback with
 an ephemeral signed test identity (no production auth bypass); screenshots go to `~/browser-manager-ui-artifacts`.
 
 Pull requests are reviewed by Codex, CodeRabbit and Greptile.
